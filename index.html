@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Combat XS - Jogos de Tiro</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #0d0d0d;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+    }
+
+    header {
+      background-color: #111;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      color: #f05454;
+      font-size: 28px;
+      margin: 0;
+    }
+
+    #games-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .game-card {
+      background-color: #1a1a2e;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .game-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .game-info {
+      padding: 15px;
+    }
+
+    .game-info h2 {
+      font-size: 18px;
+      margin: 0 0 10px 0;
+      color: #ff6767;
+    }
+
+    .game-info p {
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      font-size: 18px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🔫 Combat XS - Jogos de Tiro</h1>
+  </header>
+
+  <div id="games-container"></div>
+  <div id="loading" class="loading">Carregando jogos...</div>
+
+  <script>
+    const API_KEY = 'ea89c21f5a404059a1e24fd830b200d3';
+    const BASE_URL = 'https://api.rawg.io/api/games';
+    const gamesContainer = document.getElementById('games-container');
+    const loading = document.getElementById('loading');
+
+    async function fetchShooterGames() {
+      try {
+        const res = await fetch(`${BASE_URL}?key=${API_KEY}&genres=shooter&page_size=8`);
+        const data = await res.json();
+        const games = data.results;
+
+        for (const game of games) {
+          const detailsRes = await fetch(`${BASE_URL}/${game.id}?key=${API_KEY}`);
+          const details = await detailsRes.json();
+
+          renderGameCard({
+            name: game.name,
+            image: game.background_image,
+            description: details.description_raw || "Descrição não disponível."
+          });
+        }
+
+        loading.style.display = 'none';
+      } catch (err) {
+        loading.textContent = 'Erro ao carregar jogos.';
+        console.error(err);
+      }
+    }
+
+    function renderGameCard(game) {
+      const card = document.createElement('div');
+      card.className = 'game-card';
+
+      const image = game.image || 'https://via.placeholder.com/250x200?text=Sem+Imagem';
+
+      card.innerHTML = `
+        <img src="${image}" alt="${game.name}">
+        <div class="game-info">
+          <h2>${game.name}</h2>
+          <p>${game.description.slice(0, 200)}...</p>
+        </div>
+      `;
+
+      gamesContainer.appendChild(card);
+    }
+
+    fetchShooterGames();
+  </script>
+</body>
+</html>
